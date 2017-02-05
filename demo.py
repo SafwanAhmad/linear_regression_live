@@ -31,29 +31,33 @@ def gradient_descent_runner(points, starting_b, starting_m, learning_rate, num_i
     m = starting_m
     bs = [0] * num_iterations
     ms = [0] * num_iterations
+    err_path = [0] * num_iterations
 
     for i in range(num_iterations):
         # Plot line for the current value of b and m
         plt.plot(points[:,0], m * points[:,0] + b)
         bs[i] = b
         ms[i] = m
-        
+        err_path[i] = compute_error_for_line_given_points(b,m,points)
         b, m = step_gradient(b, m, array(points), learning_rate)
         
+        
     B,M = meshgrid(bs,ms)
-
-    errs = [[0]*B.shape[0]]*B.shape[0]
+    
+    errs = [ [0 for i in range(num_iterations)] for j in range(num_iterations)]
     
     for i in range(B.shape[0]):
         for j in range(B.shape[0]):
-          errs[i][j] = compute_error_for_line_given_points(B[i][j], M[i][j], points)
+            errs[i][j] = compute_error_for_line_given_points(B[i][j], M[i][j], points)
 
     print(B.shape, M.shape, array(errs).shape)
-    fig = plt.figure()
-    ax = fig.gca(projection='3d')
-    ax.set_title('Mean Squared Error Funtion')
-    ax.plot_surface(B,M,errs)
     
+    fig = plt.figure()
+    fig.suptitle('Mean Squared Error Function')
+    ax = fig.gca(projection='3d')
+    ax.plot_surface(B,M,errs)
+    ax.plot(bs,ms,err_path,'r',label='Path of Gradient Descent')
+    ax.legend(loc='best')
     plt.show()
     return [b, m]
 
@@ -62,7 +66,7 @@ def run():
     learning_rate = 0.0001
     initial_b = 0 # initial y-intercept guess
     initial_m = 0 # initial slope guess
-    num_iterations = 1000
+    num_iterations = 100
     print "Starting gradient descent at b = {0}, m = {1}, error = {2}".format(initial_b, initial_m, compute_error_for_line_given_points(initial_b, initial_m, points))
     print "Running..."
     [b, m] = gradient_descent_runner(points, initial_b, initial_m, learning_rate, num_iterations)
