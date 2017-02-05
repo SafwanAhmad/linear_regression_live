@@ -1,9 +1,13 @@
 from numpy import *
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
 # y = mx + b
 # m is slope, b is y-intercept
 def compute_error_for_line_given_points(b, m, points):
     totalError = 0
-    for i in range(0, len(points)):
+    
+    for i in range(0,len(points)):
         x = points[i, 0]
         y = points[i, 1]
         totalError += (y - (m * x + b)) ** 2
@@ -25,8 +29,32 @@ def step_gradient(b_current, m_current, points, learningRate):
 def gradient_descent_runner(points, starting_b, starting_m, learning_rate, num_iterations):
     b = starting_b
     m = starting_m
+    bs = [0] * num_iterations
+    ms = [0] * num_iterations
+
     for i in range(num_iterations):
+        # Plot line for the current value of b and m
+        plt.plot(points[:,0], m * points[:,0] + b)
+        bs[i] = b
+        ms[i] = m
+        
         b, m = step_gradient(b, m, array(points), learning_rate)
+        
+    B,M = meshgrid(bs,ms)
+
+    errs = [[0]*B.shape[0]]*B.shape[0]
+    
+    for i in range(B.shape[0]):
+        for j in range(B.shape[0]):
+          errs[i][j] = compute_error_for_line_given_points(B[i][j], M[i][j], points)
+
+    print(B.shape, M.shape, array(errs).shape)
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    ax.set_title('Mean Squared Error Funtion')
+    ax.plot_surface(B,M,errs)
+    
+    plt.show()
     return [b, m]
 
 def run():
